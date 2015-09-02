@@ -2,7 +2,8 @@
   "name": "zsync",
   "version": "1.0.0",
   "description": "ZFS sync",
-  "main": "index.js",
+  "main": "lib/zsync.js",
+  "bin" : { "zsync" : "./cli.js" },
   "dependencies": {
     "commander": "^2.8.1",
     "gather-stream": "^1.0.0",
