@@ -2,7 +2,7 @@
 var zsync = require('./lib/zsync');
 var prog = require('commander');
 var slice = Function.prototype.call.bind(Array.prototype.slice);
-console.error('hello', process.pid);
+
 prog.command('list [dataset]')
 	.description('list file systems')
 	.option('-u, --user [user]', 'remote ssh user')
