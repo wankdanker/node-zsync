@@ -7,41 +7,54 @@ prog.command('list')
 	.description('list file systems')
 	.option('-u, --user [user]', 'remote ssh user')
 	.option('-k, --key [key]', 'path to ssh private key')
-	.option('-r, --remote [remote]', 'remote server')
+	
 	.option('-t, --type [type]', 'filter file system types')
-	.option('-f, --format [format]', 'output format (json?)')
-	.option('-n, --name [dataset]', 'fs/vol name')
-	.option('-R, --recursive', 'recursive fs lookup')
-	.option('-e, --exclude [glob]', 'exclude datasets by glob, comma separated')
 	.option('-g, --glob [glob]', 'dataset-glob search glob')
+	.option('-x, --exclude [glob]', 'exclude datasets by glob, comma separated')
+	.option('-R, --recursive', 'recursive fs lookup')
+	
+	.option('-s, --source [dataset]', 'fs/vol name')
+	.option('-S, --source-host [host]', 'host on which the source dataset resides')
+	
+	.option('-f, --format [format]', 'output format (json?)')
+	.option('-v, --verbose', 'verbose output')
+
 	.action(list)
 
-prog.command('send')
-	.description( 'send a local filesystem/volume to a remote server at remote filesystem/volume')
+prog.command('push')
+	.description( 'push a local dataset to another dataset optionally on a remote host')
 	.option('-u, --user [user]', 'remote ssh user')
 	.option('-k, --key [key]', 'path to ssh private key')
-	.option('-r, --remote [remote]', 'remote server')
+
 	.option('-t, --type [type]', 'filter file system types')
-	.option('-f, --format [format]', 'output format (json?)')
-	.option('-n, --name [name]', 'source-dataset, eg: pool/vol1, pool')
-	.option('-d, --destination [name]', 'destination-base, eg: pool2/virtual-disks, pool2')
-	.option('-R, --recursive', 'Send all fileystems/volumes in source-dataset')
-	.option('-v, --verbose', 'verbose output')
-	.option('-e, --exclude [glob]', 'exclude datasets by glob, comma separated')
 	.option('-g, --glob [glob]', 'dataset-glob search glob')
+	.option('-x, --exclude [glob]', 'exclude datasets by glob, comma separated')
+ 	.option('-R, --recursive', 'Send all fileystems/volumes in source-dataset')
+	
+	.option('-s, --source [dataset]', 'source-dataset, eg: pool/vol1, pool')
+	.option('-S, --source-host [host]', 'host on which the source dataset resides')
+	
+	.option('-d, --destination [name]', 'destination-base, eg: pool2/virtual-disks, pool2')
+	.option('-D, --destination-host [host]', 'host on which the destination dataset resides')
+	
 	.option('-F, --force', 'force receive (may cause rollback)')
-	.action(send)
+	.option('-r, --replication', 'enable a replication stream')
+	.option('-c, --continue', 'continue on to the next dataset if errors are encountered')
+	
+	.option('-f, --format [format]', 'output format (json?)')
+	.option('-v, --verbose', 'verbose output')
+
+	.action(push)
 
 prog.command('receive [dataset]')
 	.description( 'receive a dataset via stdin')
 	.option('-u, --user [user]', 'remote ssh user')
 	.option('-k, --key [key]', 'path to ssh private key')
-	.option('-r, --remote [remote]', 'remote server')
-	.option('-t, --type [type]', 'filter file system types')
-	.option('-f, --format [format]', 'output format (json?)')
+
 	.option('-F, --force', 'force receive (may cause rollback)')
-	.option('-n, --name [name]', 'fs/vol name')
-	.option('-d, --dataset [dataset]', 'fs/vol name')
+	.option('-d, --destination [dataset]', 'destination-base, eg: pool2/virtual-disks, pool2')
+	
+	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
 	.action(receive)
 
@@ -71,11 +84,11 @@ function list() {
 	});
 }
 
-function send() {
+function push() {
 	var opts = parseOpts(arguments[arguments.length - 1]);
 
-	opts.command = 'sendGlob';
-	opts.remoteDataset = opts.remoteDataset || opts.destination;
+	opts.command = 'push';
+	opts.destination = opts.destination;
 
 	if (opts.exclude) {
 		opts.exclude = opts.exclude.split(',');
@@ -90,11 +103,11 @@ function send() {
 	});
 }
 
-function receive(dataset) {
+function receive(destination) {
 	var opts = parseOpts(arguments[arguments.length - 1]);
 	
 	opts.command = 'receive';
-	opts.dataset = opts.dataset || dataset;
+	opts.destination = opts.destination || destination;
 	opts.stream = process.stdin;
 
 	run(opts, function (err, result) {
