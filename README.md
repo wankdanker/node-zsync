@@ -13,6 +13,7 @@ todo
 * Firm up API
 * Documentation
 * Rename the module? Open to suggestions.
+* Add --progress
 
 install
 -------
