@@ -1,9 +1,12 @@
 #!/usr/bin/env nodejs
 var zsync = require('./lib/zsync');
+var debug = require('./lib/debug');
 var prog = require('commander');
+var table = require('text-table');
+
 var slice = Function.prototype.call.bind(Array.prototype.slice);
 
-prog.command('list')
+prog.command('list [glob]')
 	.description('list file systems')
 	.option('-u, --user [user]', 'remote ssh user')
 	.option('-k, --key [key]', 'path to ssh private key')
@@ -18,11 +21,12 @@ prog.command('list')
 	
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
+	.option('-V, --debug', 'enable debug output.')
 
 	.action(list)
 
-prog.command('push')
-	.description( 'push a local dataset to another dataset optionally on a remote host')
+prog.command('status [glob] [destination] [destination-host]')
+	.description( 'get the sync status between a source dataset and destination dataset')
 	.option('-u, --user [user]', 'remote ssh user')
 	.option('-k, --key [key]', 'path to ssh private key')
 
@@ -36,6 +40,31 @@ prog.command('push')
 	
 	.option('-d, --destination [name]', 'destination-base, eg: pool2/virtual-disks, pool2')
 	.option('-D, --destination-host [host]', 'host on which the destination dataset resides')
+	.option('-n, --destination-drop [number]', '[number] of elements to drop from the left side of [source-dataset].')
+	.option('-N, --destination-keep [number]', '[number] of elements to keep from the right side of [source-dataset]')
+	
+	.option('-f, --format [format]', 'output format (json?)')
+	.option('-v, --verbose', 'verbose output')
+	.option('-V, --debug', 'enable debug output.')
+	.action(status)
+
+prog.command('push [glob] [destination] [destination-host]')
+	.description( 'push a local dataset to another dataset optionally on a remote host')
+	.option('-u, --user [user]', 'remote ssh user')
+	.option('-k, --key [key]', 'path to ssh private key')
+
+	.option('-t, --type [type]', 'filter file system types')
+	.option('-g, --glob [glob]', 'dataset-glob search glob')
+	.option('-x, --exclude [glob]', 'exclude datasets by glob, comma separated')
+ 	.option('-R, --recursive', 'Send all fileystems/volumes in source-dataset')
+	
+	.option('-s, --source [source-dataset]', 'source-dataset, eg: pool/vol1, pool')
+	.option('-S, --source-host [source-host]', 'host on which the source dataset resides')
+	
+	.option('-d, --destination [name]', 'destination-base, eg: pool2/virtual-disks, pool2')
+	.option('-D, --destination-host [host]', 'host on which the destination dataset resides')
+	.option('-n, --destination-drop [number]', '[number] of elements to drop from the left side of [source-dataset].')
+	.option('-N, --destination-keep [number]', '[number] of elements to keep from the right side of [source-dataset]')
 	
 	.option('-F, --force', 'force receive (may cause rollback)')
 	.option('-r, --replication', 'enable a replication stream')
@@ -43,7 +72,7 @@ prog.command('push')
 	
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
-
+	.option('-V, --debug', 'enable debug output.')
 	.action(push)
 
 prog.command('receive [dataset]')
@@ -56,6 +85,8 @@ prog.command('receive [dataset]')
 	
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
+	.option('-V, --debug', 'enable debug output.')
+	
 	.action(receive)
 
 prog.parse(process.argv);
@@ -64,20 +95,32 @@ if (!process.argv.slice(2).length) {
 	prog.outputHelp();
 }
 
-function list() {
+function list(glob) {
 	var opts = parseOpts(arguments[arguments.length - 1]);
 
 	opts.command = 'list';
+	
+	//for some reason, sometimes commander is passing "true" as the glob
+	//that's not what we want
+	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
+
+	if (opts.glob) {
+		opts.glob = opts.glob.split(',');
+	}
 
 	if (opts.exclude) {
 		opts.exclude = opts.exclude.split(',');
 	}
-
+	
+	if (opts.debug) {
+		debug.enable('zsync');
+	}
+	
 	run(opts, function (err, list) {
 		if (err) {
 			console.error(err.message);
 			
-			return;
+			process.exit(1);
 		}
 
 		list.forEach(function (dataset) {
@@ -86,19 +129,89 @@ function list() {
 	});
 }
 
-function push() {
+function status(glob, destination, destinationHost) {
 	var opts = parseOpts(arguments[arguments.length - 1]);
 
-	opts.command = 'push';
-	opts.destination = opts.destination;
-
+	opts.command = 'status';
+	opts.destination = opts.destination || destination;
+	opts.destinationHost = opts.destinationHost || destinationHost;
+	
+	//for some reason, sometimes commander is passing "true" as the glob
+	//that's not what we want
+	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
+	
+	if (opts.glob) {
+		opts.glob = opts.glob.split(',');
+	}
+	
 	if (opts.exclude) {
 		opts.exclude = opts.exclude.split(',');
 	}
-
+	
+	if (opts.debug) {
+		debug.enable('zsync');
+	}
+	
 	run(opts, function (err, result) {
 		if (err) {
 			console.log(err.message);
+			
+			process.exit(1);
+		}
+
+		
+		var data = result.map(function (dataset) {
+			return [
+				dataset.source || ''
+				, dataset.destination || ''
+				, dataset.destinationHost || 'local'
+				, !dataset.work || false
+				, dataset.fromSnap || ''
+			];
+		});
+		
+		data.unshift([
+			'source'
+			, 'destination'
+			, 'destination-host'
+			, 'up-to-date'
+			, 'latest-snap-shot'
+		]);
+		
+		var t = table(data);
+		
+		console.log(t);
+	});
+}
+
+function push(glob, destination, destinationHost) {
+	var opts = parseOpts(arguments[arguments.length - 1]);
+
+	opts.command = 'push';
+	opts.destination = opts.destination || destination;
+	opts.destinationHost = opts.destinationHost || destinationHost;
+	
+	//for some reason, sometimes commander is passing "true" as the glob
+	//that's not what we want
+	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
+
+	if (opts.glob) {
+		opts.glob = opts.glob.split(',');
+	}
+	
+	if (opts.exclude) {
+		opts.exclude = opts.exclude.split(',');
+	}
+	
+	if (opts.debug) {
+		debug.enable('zsync');
+	}
+	
+	run(opts, function (err, result) {
+		if (err) {
+			console.log('Error running push commmand:', err.message);
+			
+			process.exit(1);
 		}
 
 		console.log('done');
@@ -112,16 +225,20 @@ function receive(destination) {
 	opts.destination = opts.destination || destination;
 	opts.stream = process.stdin;
 
+	if (opts.debug) {
+		process.env.DEBUG = 'zsync';
+	}
+	
 	run(opts, function (err, result) {
 		if (err) {
 			console.error(err.message);
 
 			return process.exit(1);
 		}
+		
 		console.error('receive ended');
 		console.error(err);
 		console.error(result);
-
 	});
 }
 
