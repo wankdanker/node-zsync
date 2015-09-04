@@ -12,6 +12,7 @@ todo
 * Add snapshot rotation
 * Firm up API
 * Documentation
+* Rename the module? Open to suggestions.
 
 install
 -------
