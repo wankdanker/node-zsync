@@ -76,6 +76,8 @@ function list() {
 	run(opts, function (err, list) {
 		if (err) {
 			console.error(err.message);
+			
+			return;
 		}
 
 		list.forEach(function (dataset) {
