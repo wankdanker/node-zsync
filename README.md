@@ -2,7 +2,38 @@ zsync
 -----
 
 This is another program and library for synchronizing/replicating ZFS datasets using the nodejs
-platform. The
+platform. Source datasets are found using globs via the minimatch module. There are currently no
+config files or settings stored in zfs attributes. 
+
+todo
+----
+
+* Add snapshotting with timestamp-tag
+* Add snapshot rotation
+* Firm up API
+* Documentation
+
+install
+-------
+
+cli
+
+```bash
+npm install -g zsync
+```
+
+api
+
+```bash
+npm install zsync
+```
+
+setup
+-----
+
+Install zsync on the source and destination hosts. Make sure that the user account under which
+zsync will be running on both hosts has access to the zfs command line utility and initiate a
+key based SSH session.
 
 cli
 ---
@@ -11,7 +42,7 @@ cli
 
 Find the datasets you are interested in replicating
 
-```sh
+```bash
 $ zsync list
 pool1
 pool1/sub1
@@ -31,7 +62,7 @@ pool1/sub1
 
 Check the status against a destination pool on a remote server
 
-```sh
+```bash
 $ zsync status --exclude "*/*2" "pool1/*" pool3 someserver
 source      destination        destination-host  up-to-date  latest-snap-shot
 pool1/sub1  pool3/sub1         someserver        false
@@ -39,7 +70,7 @@ pool1/sub1  pool3/sub1         someserver        false
 
 Push a sync to a destination pool on a remote server
 
-```sh
+```bash
 $ zsync push --replication --force --exclude "*/*2" "pool1/*" pool3 someserver
 done
 ```
