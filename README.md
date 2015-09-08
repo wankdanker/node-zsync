@@ -8,10 +8,9 @@ config files or settings stored in zfs attributes.
 todo
 ----
 
-* Firm up API
-* Documentation
 * Rename the module? Open to suggestions.
 * Add --progress
+* Add function to remove destination snapshots that don't exist in source
 
 install
 -------
@@ -225,6 +224,125 @@ Usage: rotate [options] [glob] [tag] [keep]
     -v, --verbose                verbose output
     -V, --debug                  enable debug output.
 ```
+
+api
+---
+
+### list(opts, cb)
+
+this function lists datasets and uses the minimatch module to filter unwanted datasets
+
+* opts
+  * glob - a comma separated or array list of globs to search for in the list of datasets
+  * exclude - a comma separated or array list of globs to exclude from the list of datasets
+  * type - dataset type; eg: volume,filesystem,snapshot
+  * source - source dataset to restrict recursive lookups; eg: pool1
+  * recursive - use recursion for the intial list lookup (ie: zfs list -r)
+* cb(err, list)
+  * err - error if any
+  * list - array of matching datasets
+
+### status(opts, cb)
+
+view the sync status of datasets vs a destination dataset optionally on a remote host
+
+* opts
+  * [see opts from list]
+  * destinationDrop - number of elements in the source dataset name to drop from the left
+  * destinationKeep - number of elements in the source dataset name to keep from the right
+  * sourceHost - host name of the source server
+  * destination - name of the destination dataset; eg: pool2
+  * destinationHost - host name of the destination host
+* cb(err, list)
+  * err - error if any
+  * list - array of datasets with source and destination snapshot listings, fromSnap, toSnap and boolean work if work needs to be done
+
+### diff(opts, cb)
+
+This retrieves a list of snapshots for a source and destination dataset and returns both lists
+and the latest common snapshot.
+
+opts
+  * source - source dataset; eg: pool1/vmdisk1
+  * destination - destination dataset; eg: pool2/vmdisk2
+  * destinationHost - host on which the destination dataset resides. if falsy, destination is assumed to be local
+
+### push(opts, cb)
+
+push source snapshots to destination dataset optionally on a destination host
+
+* opts
+  * [see opts from list]
+  * destinationDrop - number of elements in the source dataset name to drop from the left
+  * destinationKeep - number of elements in the source dataset name to keep from the right
+  * sourceHost - host name of the source server
+  * destination - name of the destination dataset; eg: pool2
+  * destinationHost - host name of the destination host
+  * force - force the receiving side to rollback to the most recent snapshot if data modified
+  * continue - boolean; continue processing each matched datasets even if errors occur; default false
+
+### receive(opts, cb)
+
+Receive a dataset via opts.stream.
+
+* opts
+  * stream - a readable stream whose data is a zfs send stream
+
+### sendreceive(opts, cb)
+
+Initiate a zfs send and pipe it to a zfs receive optionally on a remote server
+
+* opts
+  * source - source dataset name
+  * sourceHost - host on which the source dataset resides
+  * destination - destination dataset (base name); eg: pool2
+  * destinationHost - host on which the destination dataset resides
+  * fromSnap - for an incremental send, the snapshot that marks the beginning of the incremental period
+  * toSnap - the snapshot to send
+  * force - force receive (zfs receive -F)
+  * replication - create a replication send stream
+
+### snap(opts, cb)
+
+create snapshots on matching datasets
+
+* opts
+  * [see opts from list]
+  * dateFormat - date format to format the timestamp included in the snapshot (see https://www.npmjs.com/package/dateformat)
+  * tag - optional tag to include in the snapshot name; eg: hourly, monthly, daily, random, test, etc
+  * continue - boolean; continue processing each matched datasets even if errors occur; default false
+
+### rotate(opts, cb)
+
+rotate snapshots with an optional tag keeping a certain number
+
+* opts
+  * [see options for list]
+  * keep - number of snapshots to keep
+  * tag - optional tag to include in the snapshot name; eg: hourly, monthly, daily, random, test, etc
+  * sourceHost - host on which to create the snapshots
+
+### each(opts, fn, cb)
+
+Obtain a list of datasets from the list function then pass each dataset to fn. When done cb is called
+
+* opts
+  * type - dataset type; eg: volume;filesystem;snapshot
+  * recurseive - recursively search datasets
+  * glob - comma separated search globs
+  * exclude - comma separated globs to exclude
+  * source - source dataset
+  * host - host on which to execute list command; default is local
+* fn(dataset, next)
+  * dataset - a dataset object which describes a matched dataset
+    * name - name of the dataset
+    * used - amount of space used by dataset
+    * avail - amount of space available if dataset is removed
+    * refer - amount of spaced referenced by the dataset
+    * mountpoint - path to where the dataset is mounted
+  * next(doMore) - call this function when you are done doing things with dataset.
+    * Pass true if you want to want to process the next dataset (if any)
+    * Pass false if you want to end processing
 
 license
 -------
