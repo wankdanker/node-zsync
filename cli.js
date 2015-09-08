@@ -75,6 +75,28 @@ prog.command('push [glob] [destination] [destination-host]')
 	.option('-V, --debug', 'enable debug output.')
 	.action(push)
 
+prog.command('snapshot [glob] [tag] [dateformat]')
+	.description( 'push a local dataset to another dataset optionally on a remote host')
+	.option('-u, --user [user]', 'remote ssh user')
+	.option('-k, --key [key]', 'path to ssh private key')
+
+	.option('-t, --type [type]', 'filter file system types')
+	.option('-g, --glob [glob]', 'dataset-glob search glob')
+	.option('-x, --exclude [glob]', 'exclude datasets by glob, comma separated')
+ 	.option('-R, --recursive', 'Send all fileystems/volumes in source-dataset')
+	
+	.option('-s, --source [source-dataset]', 'source-dataset, eg: pool/vol1, pool')
+	.option('-S, --source-host [source-host]', 'host on which the source dataset resides')
+	
+	.option('-p, --snapshot [name]', 'exact snapshot name to use')
+	.option('-t, --tag [name]', 'tag name for snapshot')
+	.option('-T, --date-format [dateformat]', 'date format - see https://www.npmjs.com/package/dateformat. default: yyyymmddHHMMssl')
+	
+	.option('-f, --format [format]', 'output format (json?)')
+	.option('-v, --verbose', 'verbose output')
+	.option('-V, --debug', 'enable debug output.')
+	.action(snap)
+
 prog.command('receive [dataset]')
 	.description( 'receive a dataset via stdin')
 	.option('-u, --user [user]', 'remote ssh user')
@@ -104,14 +126,6 @@ function list(glob) {
 	//that's not what we want
 	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
 
-	if (opts.glob) {
-		opts.glob = opts.glob.split(',');
-	}
-
-	if (opts.exclude) {
-		opts.exclude = opts.exclude.split(',');
-	}
-	
 	if (opts.debug) {
 		debug.enable('zsync');
 	}
@@ -139,15 +153,7 @@ function status(glob, destination, destinationHost) {
 	//for some reason, sometimes commander is passing "true" as the glob
 	//that's not what we want
 	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
-	
-	if (opts.glob) {
-		opts.glob = opts.glob.split(',');
-	}
-	
-	if (opts.exclude) {
-		opts.exclude = opts.exclude.split(',');
-	}
-	
+
 	if (opts.debug) {
 		debug.enable('zsync');
 	}
@@ -158,7 +164,6 @@ function status(glob, destination, destinationHost) {
 			
 			process.exit(1);
 		}
-
 		
 		var data = result.map(function (dataset) {
 			return [
@@ -194,14 +199,32 @@ function push(glob, destination, destinationHost) {
 	//for some reason, sometimes commander is passing "true" as the glob
 	//that's not what we want
 	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
-
-	if (opts.glob) {
-		opts.glob = opts.glob.split(',');
+	
+	if (opts.debug) {
+		debug.enable('zsync');
 	}
 	
-	if (opts.exclude) {
-		opts.exclude = opts.exclude.split(',');
-	}
+	run(opts, function (err, result) {
+		if (err) {
+			console.log('Error running push commmand:', err.message);
+			
+			process.exit(1);
+		}
+
+		console.log('done');
+	});
+}
+
+function snap(glob, tag, dateFormat) {
+	var opts = parseOpts(arguments[arguments.length - 1]);
+
+	opts.command = 'snap';
+	
+	//for some reason, sometimes commander is passing "true" as the glob
+	//that's not what we want
+	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
+	opts.tag = (typeof tag === 'string' && tag !== 'true') ? tag : opts.tag;
+	opts.dateFormat = (typeof dateFormat === 'string' && dateFormat !== 'true') ? dateFormat : opts.dateFormat;
 	
 	if (opts.debug) {
 		debug.enable('zsync');

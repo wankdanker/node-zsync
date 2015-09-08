@@ -8,7 +8,6 @@ config files or settings stored in zfs attributes.
 todo
 ----
 
-* Add snapshotting with timestamp-tag
 * Add snapshot rotation
 * Firm up API
 * Documentation
@@ -152,6 +151,32 @@ done
     -F, --force                      force receive (may cause rollback)
     -r, --replication                enable a replication stream
     -c, --continue                   continue on to the next dataset if errors are encountered
+    -f, --format [format]            output format (json?)
+    -v, --verbose                    verbose output
+    -V, --debug                      enable debug output.
+```
+
+### snapshot
+
+```
+  Usage: snapshot [options] [glob] [tag] [dateformat]
+
+  push a local dataset to another dataset optionally on a remote host
+
+  Options:
+
+    -h, --help                       output usage information
+    -u, --user [user]                remote ssh user
+    -k, --key [key]                  path to ssh private key
+    -t, --type [type]                filter file system types
+    -g, --glob [glob]                dataset-glob search glob
+    -x, --exclude [glob]             exclude datasets by glob, comma separated
+    -R, --recursive                  Send all fileystems/volumes in source-dataset
+    -s, --source [source-dataset]    source-dataset, eg: pool/vol1, pool
+    -S, --source-host [source-host]  host on which the source dataset resides
+    -p, --snapshot [name]            exact snapshot name to use
+    -t, --tag [name]                 tag name for snapshot
+    -T, --date-format [dateformat]  date format - see https://www.npmjs.com/package/dateformat. default: yyyymmddHHMMssl
     -f, --format [format]            output format (json?)
     -v, --verbose                    verbose output
     -V, --debug                      enable debug output.
