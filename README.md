@@ -8,7 +8,6 @@ config files or settings stored in zfs attributes.
 todo
 ----
 
-* Add snapshot rotation
 * Firm up API
 * Documentation
 * Rename the module? Open to suggestions.
@@ -176,7 +175,33 @@ done
     -S, --source-host [source-host]  host on which the source dataset resides
     -p, --snapshot [name]            exact snapshot name to use
     -t, --tag [name]                 tag name for snapshot
-    -T, --date-format [dateformat]  date format - see https://www.npmjs.com/package/dateformat. default: yyyymmddHHMMssl
+    -T, --date-format [dateformat]   date format - see https://www.npmjs.com/package/dateformat. default: yyyymmddHHMMssl
+    -f, --format [format]            output format (json?)
+    -v, --verbose                    verbose output
+    -V, --debug                      enable debug output.
+```
+
+### rotate
+
+```
+Usage: rotate [options] [glob] [tag] [keep]
+
+  rotate snapshots keeping a certain number
+
+  Options:
+
+    -h, --help                       output usage information
+    -u, --user [user]                remote ssh user
+    -k, --key [key]                  path to ssh private key
+    -t, --type [type]                filter file system types
+    -g, --glob [glob]                dataset-glob search glob
+    -x, --exclude [glob]             exclude datasets by glob, comma separated
+    -R, --recursive                  Send all fileystems/volumes in source-dataset
+    -s, --source [source-dataset]    source-dataset, eg: pool/vol1, pool
+    -S, --source-host [source-host]  host on which the source dataset resides
+    -K, --keep [number]              number of snapshots to keep
+    -p, --snapshot [name]            exact snapshot name to remove
+    -t, --tag [name]                 tag name to process for rotation
     -f, --format [format]            output format (json?)
     -v, --verbose                    verbose output
     -V, --debug                      enable debug output.

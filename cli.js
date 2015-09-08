@@ -97,6 +97,28 @@ prog.command('snapshot [glob] [tag] [dateformat]')
 	.option('-V, --debug', 'enable debug output.')
 	.action(snap)
 
+prog.command('rotate [glob] [tag] [keep]')
+	.description( 'rotate snapshots keeping a certain number')
+	.option('-u, --user [user]', 'remote ssh user')
+	.option('-k, --key [key]', 'path to ssh private key')
+
+	.option('-t, --type [type]', 'filter file system types')
+	.option('-g, --glob [glob]', 'dataset-glob search glob')
+	.option('-x, --exclude [glob]', 'exclude datasets by glob, comma separated')
+ 	.option('-R, --recursive', 'Send all fileystems/volumes in source-dataset')
+	
+	.option('-s, --source [source-dataset]', 'source-dataset, eg: pool/vol1, pool')
+	.option('-S, --source-host [source-host]', 'host on which the source dataset resides')
+	
+	.option('-K, --keep [number]', 'number of snapshots to keep')
+	.option('-p, --snapshot [name]', 'exact snapshot name to remove')
+	.option('-t, --tag [name]', 'tag name to process for rotation')
+	
+	.option('-f, --format [format]', 'output format (json?)')
+	.option('-v, --verbose', 'verbose output')
+	.option('-V, --debug', 'enable debug output.')
+	.action(rotate)
+
 prog.command('receive [dataset]')
 	.description( 'receive a dataset via stdin')
 	.option('-u, --user [user]', 'remote ssh user')
@@ -225,6 +247,32 @@ function snap(glob, tag, dateFormat) {
 	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
 	opts.tag = (typeof tag === 'string' && tag !== 'true') ? tag : opts.tag;
 	opts.dateFormat = (typeof dateFormat === 'string' && dateFormat !== 'true') ? dateFormat : opts.dateFormat;
+	
+	if (opts.debug) {
+		debug.enable('zsync');
+	}
+	
+	run(opts, function (err, result) {
+		if (err) {
+			console.log('Error running push commmand:', err.message);
+			
+			process.exit(1);
+		}
+
+		console.log('done');
+	});
+}
+
+function rotate(glob, tag, keep) {
+	var opts = parseOpts(arguments[arguments.length - 1]);
+
+	opts.command = 'rotate';
+	
+	//for some reason, sometimes commander is passing "true" as the glob
+	//that's not what we want
+	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
+	opts.tag = (typeof tag === 'string' && tag !== 'true') ? tag : opts.tag;
+	opts.keep = (typeof keep === 'string' && keep !== 'true') ? keep : opts.keep;
 	
 	if (opts.debug) {
 		debug.enable('zsync');
