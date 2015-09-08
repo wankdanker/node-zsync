@@ -2,8 +2,7 @@ zsync
 -----
 
 This is another program and library for synchronizing/replicating ZFS datasets using the nodejs
-platform. Source datasets are found using globs via the minimatch module. There are currently no
-config files or settings stored in zfs attributes. 
+platform. Source datasets are found using globs via the minimatch module.
 
 todo
 ----
@@ -72,6 +71,33 @@ Push a sync to a destination pool on a remote server
 ```bash
 $ zsync push --replication --force --exclude "*/*2" "pool1/*" pool3 someserver
 done
+```
+
+configs
+-------
+
+Configuration files for the CLI may be stored in ~/.zsync.json or /etc/zsync.json. The config file
+is a simple JSON file structured like this:
+
+```json
+{
+	"preset1" : {
+		glob : "pool1/*",
+		exclude : "*/*swap",
+		destination : "pool3",
+		destinationHost : "someserver",
+		replication : true,
+		force : true
+	}
+}
+```
+Then you can do things like:
+
+```bash
+$ zsync push preset1
+$ zsync status preset1
+$ zsync snapshot preset1 hourly
+$ zsync rotate preset1 hourly 24
 ```
 
 ### list 

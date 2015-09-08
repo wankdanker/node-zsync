@@ -1,10 +1,17 @@
 #!/usr/bin/env nodejs
 var zsync = require('./lib/zsync');
 var debug = require('./lib/debug');
+var readjsonSync = require('./lib/read-json-sync');
 var prog = require('commander');
 var table = require('text-table');
-
+var extend = require('extend');
+var join = require('path').join;
 var slice = Function.prototype.call.bind(Array.prototype.slice);
+
+var config = readjsonSync(join(process.env.HOME, '.zsync.json'))
+	|| readjsonSync(join('/etc/', 'zsync.json'))
+	|| {}
+	;
 
 prog.command('list [glob]')
 	.description('list file systems')
@@ -141,13 +148,15 @@ if (!process.argv.slice(2).length) {
 
 function list(glob) {
 	var opts = parseOpts(arguments[arguments.length - 1]);
-
+	
 	opts.command = 'list';
 	
 	//for some reason, sometimes commander is passing "true" as the glob
 	//that's not what we want
 	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
 
+	opts = extend(true, opts, config[glob] || {});
+	
 	if (opts.debug) {
 		debug.enable('zsync');
 	}
@@ -167,7 +176,7 @@ function list(glob) {
 
 function status(glob, destination, destinationHost) {
 	var opts = parseOpts(arguments[arguments.length - 1]);
-
+	
 	opts.command = 'status';
 	opts.destination = opts.destination || destination;
 	opts.destinationHost = opts.destinationHost || destinationHost;
@@ -176,6 +185,8 @@ function status(glob, destination, destinationHost) {
 	//that's not what we want
 	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
 
+	opts = extend(true, opts, config[glob] || {});
+	
 	if (opts.debug) {
 		debug.enable('zsync');
 	}
@@ -222,6 +233,8 @@ function push(glob, destination, destinationHost) {
 	//that's not what we want
 	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
 	
+	opts = extend(true, opts, config[glob] || {});
+	
 	if (opts.debug) {
 		debug.enable('zsync');
 	}
@@ -239,7 +252,7 @@ function push(glob, destination, destinationHost) {
 
 function snap(glob, tag, dateFormat) {
 	var opts = parseOpts(arguments[arguments.length - 1]);
-
+	
 	opts.command = 'snap';
 	
 	//for some reason, sometimes commander is passing "true" as the glob
@@ -247,6 +260,8 @@ function snap(glob, tag, dateFormat) {
 	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
 	opts.tag = (typeof tag === 'string' && tag !== 'true') ? tag : opts.tag;
 	opts.dateFormat = (typeof dateFormat === 'string' && dateFormat !== 'true') ? dateFormat : opts.dateFormat;
+	
+	opts = extend(true, opts, config[glob] || {});
 	
 	if (opts.debug) {
 		debug.enable('zsync');
@@ -265,7 +280,7 @@ function snap(glob, tag, dateFormat) {
 
 function rotate(glob, tag, keep) {
 	var opts = parseOpts(arguments[arguments.length - 1]);
-
+	
 	opts.command = 'rotate';
 	
 	//for some reason, sometimes commander is passing "true" as the glob
@@ -273,6 +288,8 @@ function rotate(glob, tag, keep) {
 	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
 	opts.tag = (typeof tag === 'string' && tag !== 'true') ? tag : opts.tag;
 	opts.keep = (typeof keep === 'string' && keep !== 'true') ? keep : opts.keep;
+	
+	opts = extend(true, opts, config[glob] || {});
 	
 	if (opts.debug) {
 		debug.enable('zsync');
