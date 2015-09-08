@@ -161,7 +161,7 @@ done
 ```
   Usage: snapshot [options] [glob] [tag] [dateformat]
 
-  push a local dataset to another dataset optionally on a remote host
+  create snapshots on datasets matching a glob using an optional tag
 
   Options:
 

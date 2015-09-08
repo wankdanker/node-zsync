@@ -76,7 +76,7 @@ prog.command('push [glob] [destination] [destination-host]')
 	.action(push)
 
 prog.command('snapshot [glob] [tag] [dateformat]')
-	.description( 'push a local dataset to another dataset optionally on a remote host')
+	.description( 'create snapshots on datasets matching a glob using an optional tag')
 	.option('-u, --user [user]', 'remote ssh user')
 	.option('-k, --key [key]', 'path to ssh private key')
 
