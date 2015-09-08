@@ -1,6 +1,6 @@
 {
   "name": "zsync",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "ZFS sync",
   "main": "lib/zsync.js",
   "bin": {
