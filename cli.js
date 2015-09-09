@@ -5,6 +5,7 @@ var readjsonSync = require('./lib/read-json-sync');
 var prog = require('commander');
 var table = require('text-table');
 var extend = require('extend');
+var lockFile = require('lockfile');
 var join = require('path').join;
 var slice = Function.prototype.call.bind(Array.prototype.slice);
 
@@ -12,6 +13,9 @@ var config = readjsonSync(join(process.env.HOME, '.zsync.json'))
 	|| readjsonSync(join('/etc/', 'zsync.json'))
 	|| {}
 	;
+
+var LOCK_PATH = process.env.LOCK_PATH || '/var/lock/';
+var LOCK_WAIT = process.env.LOCK_WAIT || 5000;
 
 prog.command('list [glob]')
 	.description('list file systems')
@@ -224,7 +228,8 @@ function status(glob, destination, destinationHost) {
 
 function push(glob, destination, destinationHost) {
 	var opts = parseOpts(arguments[arguments.length - 1]);
-
+	var lockPath = join(LOCK_PATH, 'zsync-push.lock');
+	
 	opts.command = 'push';
 	opts.destination = opts.destination || destination;
 	opts.destinationHost = opts.destinationHost || destinationHost;
@@ -239,15 +244,26 @@ function push(glob, destination, destinationHost) {
 		debug.enable('zsync');
 	}
 	
-	run(opts, function (err, result) {
+	lockFile.lock(lockPath, { wait : LOCK_WAIT }, function (err) {
 		if (err) {
-			console.log('Error running push commmand:', err.message);
+			console.log('Error obtaining lock: ', err.message);
 			
-			process.exit(1);
+			process.exit(2);
 		}
-
-		console.log('done');
-	});
+		
+		run(opts, function (err, result) {
+			if (err) {
+				console.log('Error running push commmand:', err.message);
+				
+				process.exit(1);
+			}
+			
+			lockFile.unlock(lockPath, function (err) {
+				console.log('done');
+			});
+		});
+	
+	})
 }
 
 function snap(glob, tag, dateFormat) {
