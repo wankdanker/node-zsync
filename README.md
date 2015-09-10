@@ -305,6 +305,7 @@ push source snapshots to destination dataset optionally on a destination host
   * destination - name of the destination dataset; eg: pool2
   * destinationHost - host name of the destination host
   * force - force the receiving side to rollback to the most recent snapshot if data modified
+  * replication - create replication send stream
   * continue - boolean; continue processing each matched datasets even if errors occur; default false
 
 ### receive(opts, cb)
