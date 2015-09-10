@@ -201,6 +201,7 @@ $ zsync rotate preset1 hourly 24
     -p, --snapshot [name]            exact snapshot name to use
     -t, --tag [name]                 tag name for snapshot
     -T, --date-format [dateformat]   date format - see https://www.npmjs.com/package/dateformat. default: yyyymmddHHMMssl
+    -a, --atomic                     create all possible snapshots atomically
     -f, --format [format]            output format (json?)
     -v, --verbose                    verbose output
     -V, --debug                      enable debug output.
@@ -338,6 +339,7 @@ create snapshots on matching datasets
   * dateFormat - date format to format the timestamp included in the snapshot (see https://www.npmjs.com/package/dateformat)
   * tag - optional tag to include in the snapshot name; eg: hourly, monthly, daily, random, test, etc
   * continue - boolean; continue processing each matched datasets even if errors occur; default false
+  * atomic - boolean; create all possible snapshots at once; default false
 
 ### rotate(opts, cb)
 

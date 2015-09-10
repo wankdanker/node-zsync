@@ -102,7 +102,8 @@ prog.command('snapshot [glob] [tag] [dateformat]')
 	.option('-p, --snapshot [name]', 'exact snapshot name to use')
 	.option('-t, --tag [name]', 'tag name for snapshot')
 	.option('-T, --date-format [dateformat]', 'date format - see https://www.npmjs.com/package/dateformat. default: yyyymmddHHMMssl')
-	
+	.option('-a, --atomic', 'create all possible snapshots atomically')
+
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
 	.option('-V, --debug', 'enable debug output.')
@@ -285,7 +286,7 @@ function snap(glob, tag, dateFormat) {
 	
 	run(opts, function (err, result) {
 		if (err) {
-			console.log('Error running push commmand:', err.message);
+			console.log('Error running snapshot commmand:', err.message);
 			
 			process.exit(1);
 		}
@@ -313,7 +314,7 @@ function rotate(glob, tag, keep) {
 	
 	run(opts, function (err, result) {
 		if (err) {
-			console.log('Error running push commmand:', err.message);
+			console.log('Error running rotate commmand:', err.message);
 			
 			process.exit(1);
 		}
