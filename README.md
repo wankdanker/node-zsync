@@ -82,12 +82,12 @@ is a simple JSON file structured like this:
 ```json
 {
 	"preset1" : {
-		glob : "pool1/*",
-		exclude : "*/*swap",
-		destination : "pool3",
-		destinationHost : "someserver",
-		replication : true,
-		force : true
+		"glob" : "pool1/*",
+		"exclude" : "*/*swap",
+		"destination" : "pool3",
+		"destinationHost" : "someserver",
+		"replication" : true,
+		"force" : true
 	}
 }
 ```
