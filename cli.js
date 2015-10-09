@@ -119,15 +119,21 @@ prog.command('rotate [glob/preset] [tag] [keep] [destination] [destination-host]
 	.option('-t, --type [type]', 'filter file system types')
 	.option('-g, --glob [glob]', 'dataset-glob search glob')
 	.option('-x, --exclude [glob]', 'exclude datasets by glob, comma separated')
- 	.option('-R, --recursive', 'Send all fileystems/volumes in source-dataset')
+	.option('-R, --recursive', 'Send all fileystems/volumes in source-dataset')
 	
 	.option('-s, --source [source-dataset]', 'source-dataset, eg: pool/vol1, pool')
 	.option('-S, --source-host [source-host]', 'host on which the source dataset resides')
+	
+	.option('-d, --destination [name]', 'destination-base, eg: pool2/virtual-disks, pool2')
+	.option('-D, --destination-host [host]', 'host on which the destination dataset resides')
+	.option('-n, --destination-drop [number]', '[number] of elements to drop from the left side of [source-dataset].')
+	.option('-N, --destination-keep [number]', '[number] of elements to keep from the right side of [source-dataset]')
 	
 	.option('-K, --keep [number]', 'number of snapshots to keep')
 	.option('-p, --snapshot [name]', 'exact snapshot name to remove')
 	.option('-t, --tag [name]', 'tag name to process for rotation')
 	.option('-c, --continue', 'continue on to the next dataset if errors are encountered')
+	.option('-i, --preserve-incremental', 'prevent destroying snapshots that are needed for an incremental push. ')
 	
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
@@ -313,10 +319,12 @@ function snap(glob, tag, dateFormat) {
 	});
 }
 
-function rotate(glob, tag, keep) {
+function rotate(glob, tag, keep, destination, destinationHost) {
 	var opts = parseOpts(arguments[arguments.length - 1]);
 	
 	opts.command = 'rotate';
+	opts.destination = opts.destination || destination;
+	opts.destinationHost = opts.destinationHost || destinationHost;
 	
 	//for some reason, sometimes commander is passing "true" as the glob
 	//that's not what we want
@@ -328,6 +336,10 @@ function rotate(glob, tag, keep) {
 	
 	if (opts.debug) {
 		debug.enable('zsync');
+	}
+	
+	if (opts.destination) {
+		opts.preserveIncremental = true;
 	}
 	
 	run(opts, function (err, result) {
