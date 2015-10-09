@@ -134,15 +134,15 @@ prog.command('rotate [glob/preset] [tag] [keep] [destination] [destination-host]
 	.option('-V, --debug', 'enable debug output.')
 	.action(rotate)
 
-prog.command('destroy [destination] [destination-host]')
-	.description( 'destroy dataset identified by destination')
+prog.command('destroy [source] [source-host]')
+	.description( 'destroy dataset identified by source optionally on remote source-host')
 	.option('-u, --user [user]', 'remote ssh user')
 	.option('-k, --key [key]', 'path to ssh private key')
 
 	.option('-R, --recursive', 'Send all fileystems/volumes in source-dataset')
 	
-	.option('-d, --destination [name]', 'destination-base, eg: pool2/virtual-disks, pool2')
-	.option('-D, --destination-host [host]', 'host on which the destination dataset resides')
+	.option('-s, --source [source-dataset]', 'source-dataset, eg: pool/vol1, pool')
+	.option('-S, --source-host [source-host]', 'host on which the source dataset resides')
 	
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
