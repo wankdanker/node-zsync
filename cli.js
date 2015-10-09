@@ -133,6 +133,21 @@ prog.command('rotate [glob] [tag] [keep]')
 	.option('-V, --debug', 'enable debug output.')
 	.action(rotate)
 
+prog.command('destroy [destination] [destination-host]')
+	.description( 'destroy dataset identified by destination')
+	.option('-u, --user [user]', 'remote ssh user')
+	.option('-k, --key [key]', 'path to ssh private key')
+
+	.option('-R, --recursive', 'Send all fileystems/volumes in source-dataset')
+	
+	.option('-d, --destination [name]', 'destination-base, eg: pool2/virtual-disks, pool2')
+	.option('-D, --destination-host [host]', 'host on which the destination dataset resides')
+	
+	.option('-f, --format [format]', 'output format (json?)')
+	.option('-v, --verbose', 'verbose output')
+	.option('-V, --debug', 'enable debug output.')
+	.action(destroy)
+
 prog.command('receive [dataset]')
 	.description( 'receive a dataset via stdin')
 	.option('-u, --user [user]', 'remote ssh user')
@@ -346,6 +361,26 @@ function receive(destination) {
 		console.error('receive ended');
 		console.error(err);
 		console.error(result);
+	});
+}
+
+function destroy(destination, destinationHost) {
+	var opts = parseOpts(arguments[arguments.length - 1]);
+	
+	opts.command = 'destroy';
+	opts.destination = opts.destination || destination;
+	opts.destinationHost = opts.destinationHost || destinationHost;
+
+	if (opts.debug) {
+		process.env.DEBUG = 'zsync';
+	}
+	
+	run(opts, function (err, result) {
+		if (err) {
+			console.error(err.message);
+
+			return process.exit(1);
+		}
 	});
 }
 
