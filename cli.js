@@ -14,7 +14,6 @@ var config = readjsonSync(join(process.env.HOME, '.zsync.json'))
 	|| {}
 	;
 
-var LOCK_PATH = process.env.LOCK_PATH || '/var/lock/';
 var LOCK_WAIT = process.env.LOCK_WAIT || 5000;
 
 prog.command('list [glob/preset]')
@@ -29,7 +28,10 @@ prog.command('list [glob/preset]')
 	
 	.option('-s, --source [dataset]', 'fs/vol name')
 	.option('-S, --source-host [host]', 'host on which the source dataset resides')
-	
+
+	.option('-l, --lock-file [path]', 'lock file to use to prevent this command from running in another instance')
+	.option('-w, --lock-wait [milliseconds]', 'how long to wait for lock file')
+
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
 	.option('-V, --debug', 'enable debug output.')
@@ -53,7 +55,10 @@ prog.command('status [glob/preset] [destination] [destination-host]')
 	.option('-D, --destination-host [host]', 'host on which the destination dataset resides')
 	.option('-n, --destination-drop [number]', '[number] of elements to drop from the left side of [source-dataset].')
 	.option('-N, --destination-keep [number]', '[number] of elements to keep from the right side of [source-dataset]')
-	
+
+	.option('-l, --lock-file [path]', 'lock file to use to prevent this command from running in another instance')
+	.option('-w, --lock-wait [milliseconds]', 'how long to wait for lock file')
+
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
 	.option('-V, --debug', 'enable debug output.')
@@ -81,7 +86,10 @@ prog.command('push [glob/preset] [destination] [destination-host]')
 	.option('-r, --replication', 'enable a replication stream')
 	.option('-c, --continue', 'continue on to the next dataset if errors are encountered')
 	.option('-X, --fallback-destroy-destination', 'if destination dataset exists and there is no common snapshot, then destroy the remote dataset before send.')
-	
+
+	.option('-l, --lock-file [path]', 'lock file to use to prevent this command from running in another instance')
+	.option('-w, --lock-wait [milliseconds]', 'how long to wait for lock file')
+
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
 	.option('-V, --debug', 'enable debug output.')
@@ -105,6 +113,9 @@ prog.command('snapshot [glob/preset] [tag] [dateformat]')
 	.option('-T, --date-format [dateformat]', 'date format - see https://www.npmjs.com/package/dateformat. default: yyyymmddHHMMssl')
 	.option('-a, --atomic', 'create all possible snapshots atomically')
 	.option('-c, --continue', 'continue on to the next dataset if errors are encountered')
+
+	.option('-l, --lock-file [path]', 'lock file to use to prevent this command from running in another instance')
+	.option('-w, --lock-wait [milliseconds]', 'how long to wait for lock file')
 
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
@@ -134,7 +145,10 @@ prog.command('rotate [glob/preset] [tag] [keep] [destination] [destination-host]
 	.option('-t, --tag [name]', 'tag name to process for rotation')
 	.option('-c, --continue', 'continue on to the next dataset if errors are encountered')
 	.option('-i, --preserve-incremental', 'prevent destroying snapshots that are needed for an incremental push. ')
-	
+
+	.option('-l, --lock-file [path]', 'lock file to use to prevent this command from running in another instance')
+	.option('-w, --lock-wait [milliseconds]', 'how long to wait for lock file')
+
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
 	.option('-V, --debug', 'enable debug output.')
@@ -149,7 +163,10 @@ prog.command('destroy [source] [source-host]')
 	
 	.option('-s, --source [source-dataset]', 'source-dataset, eg: pool/vol1, pool')
 	.option('-S, --source-host [source-host]', 'host on which the source dataset resides')
-	
+
+	.option('-l, --lock-file [path]', 'lock file to use to prevent this command from running in another instance')
+	.option('-w, --lock-wait [milliseconds]', 'how long to wait for lock file')
+
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
 	.option('-V, --debug', 'enable debug output.')
@@ -162,7 +179,10 @@ prog.command('receive [dataset]')
 
 	.option('-F, --force', 'force receive (may cause rollback)')
 	.option('-d, --destination [dataset]', 'destination-base, eg: pool2/virtual-disks, pool2')
-	
+
+	.option('-l, --lock-file [path]', 'lock file to use to prevent this command from running in another instance')
+	.option('-w, --lock-wait [milliseconds]', 'how long to wait for lock file')
+
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
 	.option('-V, --debug', 'enable debug output.')
@@ -253,7 +273,6 @@ function status(glob, destination, destinationHost) {
 
 function push(glob, destination, destinationHost) {
 	var opts = parseOpts(arguments[arguments.length - 1]);
-	var lockPath = join(LOCK_PATH, 'zsync-push.lock');
 	
 	opts.command = 'push';
 	opts.destination = opts.destination || destination;
@@ -269,26 +288,15 @@ function push(glob, destination, destinationHost) {
 		debug.enable('zsync');
 	}
 	
-	lockFile.lock(lockPath, { wait : LOCK_WAIT }, function (err) {
+	run(opts, function (err, result) {
 		if (err) {
-			console.log('Error obtaining lock: ', err.message);
+			console.log('Error running push commmand:', err.message);
 			
-			process.exit(2);
+			process.exit(1);
 		}
-		
-		run(opts, function (err, result) {
-			if (err) {
-				console.log('Error running push commmand:', err.message);
-				
-				process.exit(1);
-			}
-			
-			lockFile.unlock(lockPath, function (err) {
-				console.log('done');
-			});
-		});
-	
-	})
+
+		console.log('done');
+	});
 }
 
 function snap(glob, tag, dateFormat) {
@@ -423,13 +431,13 @@ function run(opts, cb) {
 		opts.format = opts.hasOwnProperty('format') ? opts.format : 'json';
 	}
 
-	fn = zsync[opts.command];
+	var fn = zsync[opts.command];
 
 	if (format === 'json') {
 		//if the requested format is JSON then we just
 		//execute the requested function and output the returned
 		//arguments as JSON. We don't call the callback
-		return fn(opts, function (err) {
+		return go(opts, function (err) {
 			var args = slice(arguments);
 
 			//apparently errors don't convert to JSON nicely
@@ -447,5 +455,30 @@ function run(opts, cb) {
 	}
 	//else
 
-	fn(opts, cb);
+	go(opts, cb);
+
+	//this function will optionally process a lock file
+	//and then call the `fn` function determined above.
+	function go(opts, cb) {
+		if (opts.lockFile) {
+			debug('obtaining lockFile: %s', opts.lockFile);
+			lockFile.lock(opts.lockFile, { wait : opts.lockWait || LOCK_WAIT }, function (err) {
+				if (err) {
+					return cb(err);
+				}
+
+				fn(opts, function () {
+					var args = slice(arguments);
+
+					debug('releasing lockFile: %s', opts.lockFile);
+					lockFile.unlock(opts.lockFile, function (err) {
+						return cb.apply(cb, args);
+					});
+				});
+			});
+		}
+		else {
+			fn(opts, cb);
+		}
+	}
 }
