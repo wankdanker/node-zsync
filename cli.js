@@ -82,6 +82,7 @@ prog.command('push [glob/preset] [destination] [destination-host]')
 	.option('-n, --destination-drop [number]', '[number] of elements to drop from the left side of [source-dataset].')
 	.option('-N, --destination-keep [number]', '[number] of elements to keep from the right side of [source-dataset]')
 	
+	.option('-L, --latest', 'only send the latest snapshot when doing an incremental send')
 	.option('-F, --force', 'force receive (may cause rollback)')
 	.option('-r, --replication', 'enable a replication stream')
 	.option('-c, --continue', 'continue on to the next dataset if errors are encountered')
@@ -277,7 +278,8 @@ function push(glob, destination, destinationHost) {
 	opts.command = 'push';
 	opts.destination = opts.destination || destination;
 	opts.destinationHost = opts.destinationHost || destinationHost;
-	
+	opts.intermediary = !opts.latest;
+
 	//for some reason, sometimes commander is passing "true" as the glob
 	//that's not what we want
 	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
