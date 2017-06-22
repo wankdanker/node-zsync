@@ -172,7 +172,7 @@ $ zsync rotate preset1 hourly 24
     -D, --destination-host [host]    host on which the destination dataset resides
     -n, --destination-drop [number]  [number] of elements to drop from the left side of [source-dataset].
     -N, --destination-keep [number]  [number] of elements to keep from the right side of [source-dataset]
-    -L, --latest                     only send the latest snapshot when doing an incremental send
+    -L, --latest                     only send the latest snapshot. default: false
     -F, --force                      force receive (may cause rollback)
     -r, --replication                enable a replication stream
     -c, --continue                   continue on to the next dataset if errors are encountered
