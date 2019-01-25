@@ -86,6 +86,7 @@ prog.command('push [glob/preset] [destination] [destination-host]')
 	.option('-F, --force', 'force receive (may cause rollback)')
 	.option('-r, --replication', 'enable a replication stream')
 	.option('-c, --continue', 'continue on to the next dataset if errors are encountered')
+	.option('-e, --fallback-rename-destination', 'if destination dataset exists and there is no common snapshot, then rename the remote dataset before send.')
 	.option('-X, --fallback-destroy-destination', 'if destination dataset exists and there is no common snapshot, then destroy the remote dataset before send.')
 
 	.option('-l, --lock-file [path]', 'lock file to use to prevent this command from running in another instance')
@@ -172,6 +173,22 @@ prog.command('destroy [source] [source-host]')
 	.option('-v, --verbose', 'verbose output')
 	.option('-V, --debug', 'enable debug output.')
 	.action(destroy)
+
+prog.command('rename [source] [name] [source-host]')
+	.description( 'rename dataset identified by source to name, optionally on remote source-host')
+	.option('-u, --user [user]', 'remote ssh user')
+	.option('-k, --key [key]', 'path to ssh private key')
+
+	.option('-s, --source [source-dataset]', 'source-dataset, eg: pool/vol1, pool')
+	.option('-S, --source-host [source-host]', 'host on which the source dataset resides')
+	.option('-n, --name [name]', 'the new name of source-dataset, eg: pool/vol1-copy, pool2')
+	.option('-l, --lock-file [path]', 'lock file to use to prevent this command from running in another instance')
+	.option('-w, --lock-wait [milliseconds]', 'how long to wait for lock file')
+
+	.option('-f, --format [format]', 'output format (json?)')
+	.option('-v, --verbose', 'verbose output')
+	.option('-V, --debug', 'enable debug output.')
+	.action(rename)
 
 prog.command('receive [dataset]')
 	.description( 'receive a dataset via stdin')
@@ -393,6 +410,27 @@ function destroy(destination, destinationHost) {
 	opts.command = 'destroy';
 	opts.destination = opts.destination || destination;
 	opts.destinationHost = opts.destinationHost || destinationHost;
+
+	if (opts.debug) {
+		process.env.DEBUG = 'zsync';
+	}
+	
+	run(opts, function (err, result) {
+		if (err) {
+			console.error(err.message);
+
+			return process.exit(1);
+		}
+	});
+}
+
+function rename(source, name, sourceHost) {
+	var opts = parseOpts(arguments[arguments.length - 1]);
+	
+	opts.command = 'rename';
+	opts.source = opts.source || source;
+	opts.name = opts.name || name;
+	opts.sourceHost = opts.sourceHost || sourceHost;
 
 	if (opts.debug) {
 		process.env.DEBUG = 'zsync';
