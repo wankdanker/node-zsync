@@ -207,6 +207,27 @@ prog.command('receive [dataset]')
 	
 	.action(receive)
 
+prog.command('send')
+	.description( 'send a dataset via stdout')
+	.option('-u, --user [user]', 'remote ssh user')
+	.option('-k, --key [key]', 'path to ssh private key')
+
+	.option('-i, --incremental [dataset]', 'do an incremental send starting with [dataset]')
+	.option('-s, --snapshot [dataset]', 'the final shanpshot to send')
+	
+	.option('-I, --intermediary', 'include itermediate snapshots when doing an incremental send')
+	.option('-p, --properties', 'include properties in the send stream')
+	.option('-R, --replication', 'create a replication send stream')
+
+	.option('-l, --lock-file [path]', 'lock file to use to prevent this command from running in another instance')
+	.option('-w, --lock-wait [milliseconds]', 'how long to wait for lock file')
+
+	.option('-f, --format [format]', 'output format (json?)')
+	.option('-v, --verbose', 'verbose output')
+	.option('-V, --debug', 'enable debug output.')
+
+	.action(send)
+
 prog.parse(process.argv);
 
 if (!process.argv.slice(2).length) {
@@ -386,6 +407,30 @@ function receive(destination) {
 	opts.command = 'receive';
 	opts.destination = opts.destination || destination;
 	opts.stream = process.stdin;
+
+	if (opts.debug) {
+		process.env.DEBUG = 'zsync';
+	}
+	
+	run(opts, function (err, result) {
+		if (err) {
+			console.error(err.message);
+
+			return process.exit(1);
+		}
+		
+		console.error('receive ended');
+		console.error(err);
+		console.error(result);
+	});
+}
+
+//TODO: implement the needed functionality to generate a send stream to stdout or to a specified stream
+function send() {
+	var opts = parseOpts(arguments[arguments.length - 1]);
+	
+	opts.command = 'send';
+	opts.stream = process.stdout;
 
 	if (opts.debug) {
 		process.env.DEBUG = 'zsync';
