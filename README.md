@@ -103,154 +103,268 @@ $ zsync rotate preset1 hourly 24
 ### list 
 
 ```
-  Usage: list [options] [glob]
+Usage: list [options] [glob/preset]
 
-  list file systems
+list file systems
 
-  Options:
-
-    -h, --help                output usage information
-    -u, --user [user]         remote ssh user
-    -k, --key [key]           path to ssh private key
-    -t, --type [type]         filter file system types
-    -g, --glob [glob]         dataset-glob search glob
-    -x, --exclude [glob]      exclude datasets by glob, comma separated
-    -R, --recursive           recursive fs lookup
-    -s, --source [dataset]    fs/vol name
-    -S, --source-host [host]  host on which the source dataset resides
-    -f, --format [format]     output format (json?)
-    -v, --verbose             verbose output
-    -V, --debug               enable debug output.
+Options:
+  -u, --user [user]               remote ssh user
+  -k, --key [key]                 path to ssh private key
+  -t, --type [type]               filter file system types
+  -g, --glob [glob]               dataset-glob search glob
+  -x, --exclude [glob]            exclude datasets by glob, comma separated
+  -R, --recursive                 recursive fs lookup
+  -s, --source [dataset]          fs/vol name
+  -S, --source-host [host]        host on which the source dataset resides
+  -l, --lock-file [path]          lock file to use to prevent this command from running in another instance
+  -w, --lock-wait [milliseconds]  how long to wait for lock file
+  -f, --format [format]           output format (json?)
+  -v, --verbose                   verbose output
+  -V, --debug                     enable debug output.
+  -h, --help                      output usage information
 ```
 
 ### status
 
 ```
-  Usage: status [options] [glob] [destination] [destination-host]
+Usage: status [options] [glob/preset] [destination] [destination-host]
 
-  get the sync status between a source dataset and destination dataset
+get the sync status between a source dataset and destination dataset
 
-  Options:
-
-    -h, --help                       output usage information
-    -u, --user [user]                remote ssh user
-    -k, --key [key]                  path to ssh private key
-    -t, --type [type]                filter file system types
-    -g, --glob [glob]                dataset-glob search glob
-    -x, --exclude [glob]             exclude datasets by glob, comma separated
-    -R, --recursive                  Send all fileystems/volumes in source-dataset
-    -s, --source [dataset]           source-dataset, eg: pool/vol1, pool
-    -S, --source-host [host]         host on which the source dataset resides
-    -d, --destination [name]         destination-base, eg: pool2/virtual-disks, pool2
-    -D, --destination-host [host]    host on which the destination dataset resides
-    -n, --destination-drop [number]  [number] of elements to drop from the left side of [source-dataset].
-    -N, --destination-keep [number]  [number] of elements to keep from the right side of [source-dataset]
-    -f, --format [format]            output format (json?)
-    -v, --verbose                    verbose output
-    -V, --debug                      enable debug output.
+Options:
+  -u, --user [user]                remote ssh user
+  -k, --key [key]                  path to ssh private key
+  -t, --type [type]                filter file system types
+  -g, --glob [glob]                dataset-glob search glob
+  -x, --exclude [glob]             exclude datasets by glob, comma separated
+  -R, --recursive                  Send all fileystems/volumes in source-dataset
+  -s, --source [dataset]           source-dataset, eg: pool/vol1, pool
+  -S, --source-host [host]         host on which the source dataset resides
+  -d, --destination [name]         destination-base, eg: pool2/virtual-disks, pool2
+  -D, --destination-host [host]    host on which the destination dataset resides
+  -n, --destination-drop [number]  [number] of elements to drop from the left side of [source-dataset].
+  -N, --destination-keep [number]  [number] of elements to keep from the right side of [source-dataset]
+  -l, --lock-file [path]           lock file to use to prevent this command from running in another instance
+  -w, --lock-wait [milliseconds]   how long to wait for lock file
+  -f, --format [format]            output format (json?)
+  -v, --verbose                    verbose output
+  -V, --debug                      enable debug output.
+  -h, --help                       output usage information
 ```
 
 ### push
 
 ```
-  Usage: push [options] [glob] [destination] [destination-host]
+Usage: push [options] [glob/preset] [destination] [destination-host]
 
-  push a local dataset to another dataset optionally on a remote host
+push a local dataset to another dataset optionally on a remote host
 
-  Options:
+Options:
+  -u, --user [user]                   remote ssh user
+  -k, --key [key]                     path to ssh private key
+  -t, --type [type]                   filter file system types
+  -g, --glob [glob]                   dataset-glob search glob
+  -x, --exclude [glob]                exclude datasets by glob, comma separated
+  -R, --recursive                     Send all fileystems/volumes in source-dataset
+  -s, --source [source-dataset]       source-dataset, eg: pool/vol1, pool
+  -S, --source-host [source-host]     host on which the source dataset resides
+  -d, --destination [name]            destination-base, eg: pool2/virtual-disks, pool2
+  -D, --destination-host [host]       host on which the destination dataset resides
+  -n, --destination-drop [number]     [number] of elements to drop from the left side of [source-dataset].
+  -N, --destination-keep [number]     [number] of elements to keep from the right side of [source-dataset]
+  -L, --latest                        only send the latest snapshot when doing an incremental send
+  -F, --force                         force receive (may cause rollback)
+  -r, --replication                   enable a replication stream
+  -c, --continue                      continue on to the next dataset if errors are encountered
+  -e, --fallback-rename-destination   if destination dataset exists and there is no common snapshot, then rename the remote dataset before send.
+  -X, --fallback-destroy-destination  if destination dataset exists and there is no common snapshot, then destroy the remote dataset before send.
+  -l, --lock-file [path]              lock file to use to prevent this command from running in another instance
+  -w, --lock-wait [milliseconds]      how long to wait for lock file
+  -f, --format [format]               output format (json?)
+  -v, --verbose                       verbose output
+  -V, --debug                         enable debug output.
+  -h, --help                          output usage information
+```
 
-    -h, --help                       output usage information
-    -u, --user [user]                remote ssh user
-    -k, --key [key]                  path to ssh private key
-    -t, --type [type]                filter file system types
-    -g, --glob [glob]                dataset-glob search glob
-    -x, --exclude [glob]             exclude datasets by glob, comma separated
-    -R, --recursive                  Send all fileystems/volumes in source-dataset
-    -s, --source [source-dataset]    source-dataset, eg: pool/vol1, pool
-    -S, --source-host [source-host]  host on which the source dataset resides
-    -d, --destination [name]         destination-base, eg: pool2/virtual-disks, pool2
-    -D, --destination-host [host]    host on which the destination dataset resides
-    -n, --destination-drop [number]  [number] of elements to drop from the left side of [source-dataset].
-    -N, --destination-keep [number]  [number] of elements to keep from the right side of [source-dataset]
-    -L, --latest                     only send the latest snapshot. default: false
-    -F, --force                      force receive (may cause rollback)
-    -r, --replication                enable a replication stream
-    -c, --continue                   continue on to the next dataset if errors are encountered
-    -f, --format [format]            output format (json?)
-    -v, --verbose                    verbose output
-    -V, --debug                      enable debug output.
+### pull
+
+```
+Usage: pull [options] [glob/preset] [source-host] [destination] [destination-host]
+
+pull  dataset from a remote host to another dataset optionally on a remote host
+
+Options:
+  -u, --user [user]                   remote ssh user
+  -k, --key [key]                     path to ssh private key
+  -t, --type [type]                   filter file system types
+  -g, --glob [glob]                   dataset-glob search glob
+  -x, --exclude [glob]                exclude datasets by glob, comma separated
+  -R, --recursive                     Send all fileystems/volumes in source-dataset
+  -s, --source [source-dataset]       source-dataset, eg: pool/vol1, pool
+  -S, --source-host [source-host]     host on which the source dataset resides
+  -d, --destination [name]            destination-base, eg: pool2/virtual-disks, pool2
+  -D, --destination-host [host]       host on which the destination dataset resides
+  -n, --destination-drop [number]     [number] of elements to drop from the left side of [source-dataset].
+  -N, --destination-keep [number]     [number] of elements to keep from the right side of [source-dataset]
+  -L, --latest                        only send the latest snapshot when doing an incremental send
+  -F, --force                         force receive (may cause rollback)
+  -r, --replication                   enable a replication stream
+  -c, --continue                      continue on to the next dataset if errors are encountered
+  -e, --fallback-rename-destination   if destination dataset exists and there is no common snapshot, then rename the remote dataset before send.
+  -X, --fallback-destroy-destination  if destination dataset exists and there is no common snapshot, then destroy the remote dataset before send.
+  -l, --lock-file [path]              lock file to use to prevent this command from running in another instance
+  -w, --lock-wait [milliseconds]      how long to wait for lock file
+  -f, --format [format]               output format (json?)
+  -v, --verbose                       verbose output
+  -V, --debug                         enable debug output.
+  -h, --help                          output usage information
 ```
 
 ### snapshot
 
 ```
-  Usage: snapshot [options] [glob] [tag] [dateformat]
+Usage: snapshot [options] [glob/preset] [tag] [dateformat]
 
-  create snapshots on datasets matching a glob using an optional tag
+create snapshots on datasets matching a glob using an optional tag
 
-  Options:
-
-    -h, --help                       output usage information
-    -u, --user [user]                remote ssh user
-    -k, --key [key]                  path to ssh private key
-    -t, --type [type]                filter file system types
-    -g, --glob [glob]                dataset-glob search glob
-    -x, --exclude [glob]             exclude datasets by glob, comma separated
-    -R, --recursive                  Send all fileystems/volumes in source-dataset
-    -s, --source [source-dataset]    source-dataset, eg: pool/vol1, pool
-    -S, --source-host [source-host]  host on which the source dataset resides
-    -p, --snapshot [name]            exact snapshot name to use
-    -t, --tag [name]                 tag name for snapshot
-    -T, --date-format [dateformat]   date format - see https://www.npmjs.com/package/dateformat. default: yyyymmddHHMMssl
-    -a, --atomic                     create all possible snapshots atomically
-    -f, --format [format]            output format (json?)
-    -v, --verbose                    verbose output
-    -V, --debug                      enable debug output.
+Options:
+  -u, --user [user]                remote ssh user
+  -k, --key [key]                  path to ssh private key
+  -t, --type [type]                filter file system types
+  -g, --glob [glob]                dataset-glob search glob
+  -x, --exclude [glob]             exclude datasets by glob, comma separated
+  -R, --recursive                  Send all fileystems/volumes in source-dataset
+  -s, --source [source-dataset]    source-dataset, eg: pool/vol1, pool
+  -S, --source-host [source-host]  host on which the source dataset resides
+  -p, --snapshot [name]            exact snapshot name to use
+  -t, --tag [name]                 tag name for snapshot
+  -T, --date-format [dateformat]   date format - see https://www.npmjs.com/package/dateformat. default: yyyymmddHHMMssl
+  -a, --atomic                     create all possible snapshots atomically
+  -c, --continue                   continue on to the next dataset if errors are encountered
+  -l, --lock-file [path]           lock file to use to prevent this command from running in another instance
+  -w, --lock-wait [milliseconds]   how long to wait for lock file
+  -f, --format [format]            output format (json?)
+  -v, --verbose                    verbose output
+  -V, --debug                      enable debug output.
+  -h, --help                       output usage information
 ```
 
 ### rotate
 
 ```
-Usage: rotate [options] [glob] [tag] [keep]
+Usage: rotate [options] [glob/preset] [tag] [keep] [destination] [destination-host]
 
-  rotate snapshots keeping a certain number
+rotate snapshots keeping a certain number
 
-  Options:
+Options:
+  -u, --user [user]                remote ssh user
+  -k, --key [key]                  path to ssh private key
+  -t, --type [type]                filter file system types
+  -g, --glob [glob]                dataset-glob search glob
+  -x, --exclude [glob]             exclude datasets by glob, comma separated
+  -R, --recursive                  Send all fileystems/volumes in source-dataset
+  -s, --source [source-dataset]    source-dataset, eg: pool/vol1, pool
+  -S, --source-host [source-host]  host on which the source dataset resides
+  -d, --destination [name]         destination-base, eg: pool2/virtual-disks, pool2
+  -D, --destination-host [host]    host on which the destination dataset resides
+  -n, --destination-drop [number]  [number] of elements to drop from the left side of [source-dataset].
+  -N, --destination-keep [number]  [number] of elements to keep from the right side of [source-dataset]
+  -K, --keep [number]              number of snapshots to keep
+  -p, --snapshot [name]            exact snapshot name to remove
+  -t, --tag [name]                 tag name to process for rotation
+  -c, --continue                   continue on to the next dataset if errors are encountered
+  -i, --preserve-incremental       prevent destroying snapshots that are needed for an incremental push. 
+  -l, --lock-file [path]           lock file to use to prevent this command from running in another instance
+  -w, --lock-wait [milliseconds]   how long to wait for lock file
+  -f, --format [format]            output format (json?)
+  -v, --verbose                    verbose output
+  -V, --debug                      enable debug output.
+  -h, --help                       output usage information
+```
 
-    -h, --help                       output usage information
-    -u, --user [user]                remote ssh user
-    -k, --key [key]                  path to ssh private key
-    -t, --type [type]                filter file system types
-    -g, --glob [glob]                dataset-glob search glob
-    -x, --exclude [glob]             exclude datasets by glob, comma separated
-    -R, --recursive                  Send all fileystems/volumes in source-dataset
-    -s, --source [source-dataset]    source-dataset, eg: pool/vol1, pool
-    -S, --source-host [source-host]  host on which the source dataset resides
-    -K, --keep [number]              number of snapshots to keep
-    -p, --snapshot [name]            exact snapshot name to remove
-    -t, --tag [name]                 tag name to process for rotation
-    -f, --format [format]            output format (json?)
-    -v, --verbose                    verbose output
-    -V, --debug                      enable debug output.
+### destroy
+
+```
+Usage: destroy [options] [source] [source-host]
+
+destroy dataset identified by source optionally on remote source-host
+
+Options:
+  -u, --user [user]                remote ssh user
+  -k, --key [key]                  path to ssh private key
+  -R, --recursive                  Send all fileystems/volumes in source-dataset
+  -s, --source [source-dataset]    source-dataset, eg: pool/vol1, pool
+  -S, --source-host [source-host]  host on which the source dataset resides
+  -l, --lock-file [path]           lock file to use to prevent this command from running in another instance
+  -w, --lock-wait [milliseconds]   how long to wait for lock file
+  -f, --format [format]            output format (json?)
+  -v, --verbose                    verbose output
+  -V, --debug                      enable debug output.
+  -h, --help                       output usage information
+```
+
+### rename
+
+```
+Usage: rename [options] [source] [name] [source-host]
+
+rename dataset identified by source to name, optionally on remote source-host
+
+Options:
+  -u, --user [user]                remote ssh user
+  -k, --key [key]                  path to ssh private key
+  -s, --source [source-dataset]    source-dataset, eg: pool/vol1, pool
+  -S, --source-host [source-host]  host on which the source dataset resides
+  -n, --name [name]                the new name of source-dataset, eg: pool/vol1-copy, pool2
+  -l, --lock-file [path]           lock file to use to prevent this command from running in another instance
+  -w, --lock-wait [milliseconds]   how long to wait for lock file
+  -f, --format [format]            output format (json?)
+  -v, --verbose                    verbose output
+  -V, --debug                      enable debug output.
+  -h, --help                       output usage information
 ```
 
 ### receive
 
 ```
-  Usage: receive [options] [dataset]
+Usage: receive [options] [dataset]
 
-  receive a dataset via stdin
+receive a dataset via stdin
 
-  Options:
+Options:
+  -u, --user [user]               remote ssh user
+  -k, --key [key]                 path to ssh private key
+  -F, --force                     force receive (may cause rollback)
+  -d, --destination [dataset]     destination-base, eg: pool2/virtual-disks, pool2
+  -l, --lock-file [path]          lock file to use to prevent this command from running in another instance
+  -w, --lock-wait [milliseconds]  how long to wait for lock file
+  -f, --format [format]           output format (json?)
+  -v, --verbose                   verbose output
+  -V, --debug                     enable debug output.
+  -h, --help                      output usage information
+```
 
-    -h, --help                   output usage information
-    -u, --user [user]            remote ssh user
-    -k, --key [key]              path to ssh private key
-    -F, --force                  force receive (may cause rollback)
-    -d, --destination [dataset]  destination-base, eg: pool2/virtual-disks, pool2
-    -f, --format [format]        output format (json?)
-    -v, --verbose                verbose output
-    -V, --debug                  enable debug output.
+### send
+
+```
+Usage: send [options]
+
+send a dataset via stdout
+
+Options:
+  -u, --user [user]               remote ssh user
+  -k, --key [key]                 path to ssh private key
+  -i, --incremental [dataset]     do an incremental send starting with [dataset]
+  -s, --snapshot [dataset]        the final shanpshot to send
+  -I, --intermediary              include itermediate snapshots when doing an incremental send
+  -p, --properties                include properties in the send stream
+  -R, --replication               create a replication send stream
+  -l, --lock-file [path]          lock file to use to prevent this command from running in another instance
+  -w, --lock-wait [milliseconds]  how long to wait for lock file
+  -f, --format [format]           output format (json?)
+  -v, --verbose                   verbose output
+  -V, --debug                     enable debug output.
+  -h, --help                      output usage information
 ```
 
 api
