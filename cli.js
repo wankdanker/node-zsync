@@ -97,6 +97,39 @@ prog.command('push [glob/preset] [destination] [destination-host]')
 	.option('-V, --debug', 'enable debug output.')
 	.action(push)
 
+prog.command('pull [glob/preset] [source-host] [destination] [destination-host]')
+	.description( 'pull  dataset from a remote host to another dataset optionally on a remote host')
+	.option('-u, --user [user]', 'remote ssh user')
+	.option('-k, --key [key]', 'path to ssh private key')
+
+	.option('-t, --type [type]', 'filter file system types')
+	.option('-g, --glob [glob]', 'dataset-glob search glob')
+	.option('-x, --exclude [glob]', 'exclude datasets by glob, comma separated')
+ 	.option('-R, --recursive', 'Send all fileystems/volumes in source-dataset')
+	
+	.option('-s, --source [source-dataset]', 'source-dataset, eg: pool/vol1, pool')
+	.option('-S, --source-host [source-host]', 'host on which the source dataset resides')
+	
+	.option('-d, --destination [name]', 'destination-base, eg: pool2/virtual-disks, pool2')
+	.option('-D, --destination-host [host]', 'host on which the destination dataset resides')
+	.option('-n, --destination-drop [number]', '[number] of elements to drop from the left side of [source-dataset].')
+	.option('-N, --destination-keep [number]', '[number] of elements to keep from the right side of [source-dataset]')
+	
+	.option('-L, --latest', 'only send the latest snapshot when doing an incremental send')
+	.option('-F, --force', 'force receive (may cause rollback)')
+	.option('-r, --replication', 'enable a replication stream')
+	.option('-c, --continue', 'continue on to the next dataset if errors are encountered')
+	.option('-e, --fallback-rename-destination', 'if destination dataset exists and there is no common snapshot, then rename the remote dataset before send.')
+	.option('-X, --fallback-destroy-destination', 'if destination dataset exists and there is no common snapshot, then destroy the remote dataset before send.')
+
+	.option('-l, --lock-file [path]', 'lock file to use to prevent this command from running in another instance')
+	.option('-w, --lock-wait [milliseconds]', 'how long to wait for lock file')
+
+	.option('-f, --format [format]', 'output format (json?)')
+	.option('-v, --verbose', 'verbose output')
+	.option('-V, --debug', 'enable debug output.')
+	.action(pull)
+
 prog.command('snapshot [glob/preset] [tag] [dateformat]')
 	.description( 'create snapshots on datasets matching a glob using an optional tag')
 	.option('-u, --user [user]', 'remote ssh user')
@@ -314,6 +347,36 @@ function push(glob, destination, destinationHost) {
 	var opts = parseOpts(arguments[arguments.length - 1]);
 	
 	opts.command = 'push';
+	opts.destination = opts.destination || destination;
+	opts.destinationHost = opts.destinationHost || destinationHost;
+	opts.intermediary = !opts.latest;
+
+	//for some reason, sometimes commander is passing "true" as the glob
+	//that's not what we want
+	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
+	
+	opts = extend(true, opts, config[glob] || {});
+	
+	if (opts.debug) {
+		debug.enable('zsync');
+	}
+	
+	run(opts, function (err, result) {
+		if (err) {
+			console.log('Error running push commmand:', err.message);
+			
+			process.exit(1);
+		}
+
+		console.log('done');
+	});
+}
+
+function pull(glob, sourceHost, destination, destinationHost) {
+	var opts = parseOpts(arguments[arguments.length - 1]);
+	
+	opts.command = 'push';
+	opts.sourceHost = opts.sourceHost || sourceHost;
 	opts.destination = opts.destination || destination;
 	opts.destinationHost = opts.destinationHost || destinationHost;
 	opts.intermediary = !opts.latest;
