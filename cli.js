@@ -35,7 +35,7 @@ prog.command('list [glob/preset]')
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
 	.option('-V, --debug', 'enable debug output.')
-
+	.option('-C, --config [path]', 'path to presets config file, supersedes all other possible configs')
 	.action(list)
 
 prog.command('status [glob/preset] [destination] [destination-host]')
@@ -62,6 +62,7 @@ prog.command('status [glob/preset] [destination] [destination-host]')
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
 	.option('-V, --debug', 'enable debug output.')
+	.option('-C, --config [path]', 'path to presets config file, supersedes all other possible configs')
 	.action(status)
 
 prog.command('push [glob/preset] [destination] [destination-host]')
@@ -95,6 +96,7 @@ prog.command('push [glob/preset] [destination] [destination-host]')
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
 	.option('-V, --debug', 'enable debug output.')
+	.option('-C, --config [path]', 'path to presets config file, supersedes all other possible configs')
 	.action(push)
 
 prog.command('pull [glob/preset] [source-host] [destination] [destination-host]')
@@ -128,6 +130,7 @@ prog.command('pull [glob/preset] [source-host] [destination] [destination-host]'
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
 	.option('-V, --debug', 'enable debug output.')
+	.option('-C, --config [path]', 'path to presets config file, supersedes all other possible configs')
 	.action(pull)
 
 prog.command('snapshot [glob/preset] [tag] [dateformat]')
@@ -155,6 +158,7 @@ prog.command('snapshot [glob/preset] [tag] [dateformat]')
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
 	.option('-V, --debug', 'enable debug output.')
+	.option('-C, --config [path]', 'path to presets config file, supersedes all other possible configs')
 	.action(snap)
 
 prog.command('rotate [glob/preset] [tag] [keep] [destination] [destination-host]')
@@ -187,6 +191,7 @@ prog.command('rotate [glob/preset] [tag] [keep] [destination] [destination-host]
 	.option('-f, --format [format]', 'output format (json?)')
 	.option('-v, --verbose', 'verbose output')
 	.option('-V, --debug', 'enable debug output.')
+	.option('-C, --config [path]', 'path to presets config file, supersedes all other possible configs')
 	.action(rotate)
 
 prog.command('destroy [source] [source-host]')
@@ -276,6 +281,8 @@ function list(glob) {
 	//that's not what we want
 	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
 
+	config = maybeLoadOptsConfig(opts) || config;
+
 	opts = extend(true, opts, config[glob] || {});
 	
 	if (opts.debug) {
@@ -305,6 +312,8 @@ function status(glob, destination, destinationHost) {
 	//for some reason, sometimes commander is passing "true" as the glob
 	//that's not what we want
 	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
+
+	config = maybeLoadOptsConfig(opts) || config;
 
 	opts = extend(true, opts, config[glob] || {});
 	
@@ -355,6 +364,8 @@ function push(glob, destination, destinationHost) {
 	//that's not what we want
 	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
 	
+	config = maybeLoadOptsConfig(opts) || config;
+
 	opts = extend(true, opts, config[glob] || {});
 	
 	if (opts.debug) {
@@ -385,6 +396,8 @@ function pull(glob, sourceHost, destination, destinationHost) {
 	//that's not what we want
 	opts.glob = (typeof glob === 'string' && glob !== 'true') ? glob : opts.glob;
 	
+	config = maybeLoadOptsConfig(opts) || config;
+
 	opts = extend(true, opts, config[glob] || {});
 	
 	if (opts.debug) {
@@ -413,6 +426,8 @@ function snap(glob, tag, dateFormat) {
 	opts.tag = (typeof tag === 'string' && tag !== 'true') ? tag : opts.tag;
 	opts.dateFormat = (typeof dateFormat === 'string' && dateFormat !== 'true') ? dateFormat : opts.dateFormat;
 	
+	config = maybeLoadOptsConfig(opts) || config;
+
 	opts = extend(true, opts, config[glob] || {});
 	
 	if (opts.debug) {
@@ -443,6 +458,8 @@ function rotate(glob, tag, keep, destination, destinationHost) {
 	opts.tag = (typeof tag === 'string' && tag !== 'true') ? tag : opts.tag;
 	opts.keep = (typeof keep === 'string' && keep !== 'true') ? keep : opts.keep;
 	
+	config = maybeLoadOptsConfig(opts) || config;
+
 	opts = extend(true, opts, config[glob] || {});
 	
 	if (opts.debug) {
@@ -629,4 +646,20 @@ function run(opts, cb) {
 			fn(opts, cb);
 		}
 	}
+}
+
+function maybeLoadOptsConfig(opts) {
+	var config;
+
+	if (opts.config) {
+		config = readjsonSync(opts.config);
+
+		if (!config) {
+			console.error('config file not found');
+			
+			process.exit(2);
+		}
+	}
+
+	return config;
 }
