@@ -121,6 +121,7 @@ Options:
   -f, --format [format]           output format (json?)
   -v, --verbose                   verbose output
   -V, --debug                     enable debug output.
+  -C, --config [path]             path to presets config file, supersedes all other possible configs
   -h, --help                      output usage information
 ```
 
@@ -149,6 +150,7 @@ Options:
   -f, --format [format]            output format (json?)
   -v, --verbose                    verbose output
   -V, --debug                      enable debug output.
+  -C, --config [path]              path to presets config file, supersedes all other possible configs
   -h, --help                       output usage information
 ```
 
@@ -183,6 +185,7 @@ Options:
   -f, --format [format]               output format (json?)
   -v, --verbose                       verbose output
   -V, --debug                         enable debug output.
+  -C, --config [path]                 path to presets config file, supersedes all other possible configs
   -h, --help                          output usage information
 ```
 
@@ -217,6 +220,7 @@ Options:
   -f, --format [format]               output format (json?)
   -v, --verbose                       verbose output
   -V, --debug                         enable debug output.
+  -C, --config [path]                 path to presets config file, supersedes all other possible configs
   -h, --help                          output usage information
 ```
 
@@ -246,6 +250,7 @@ Options:
   -f, --format [format]            output format (json?)
   -v, --verbose                    verbose output
   -V, --debug                      enable debug output.
+  -C, --config [path]              path to presets config file, supersedes all other possible configs
   -h, --help                       output usage information
 ```
 
@@ -279,6 +284,7 @@ Options:
   -f, --format [format]            output format (json?)
   -v, --verbose                    verbose output
   -V, --debug                      enable debug output.
+  -C, --config [path]              path to presets config file, supersedes all other possible configs
   -h, --help                       output usage information
 ```
 
