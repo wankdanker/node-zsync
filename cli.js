@@ -288,7 +288,10 @@ function list(glob) {
 	if (opts.debug) {
 		debug.enable('zsync');
 	}
-	
+
+	opts.host = opts.sourceHost;
+	delete opts.sourceHost;
+
 	run(opts, function (err, list) {
 		if (err) {
 			console.error(err.message);
