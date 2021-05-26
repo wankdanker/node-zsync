@@ -74,7 +74,10 @@ prog.command('push [glob/preset] [destination] [destination-host]')
 	.option('-g, --glob [glob]', 'dataset-glob search glob')
 	.option('-x, --exclude [glob]', 'exclude datasets by glob, comma separated')
  	.option('-R, --recursive', 'Send all fileystems/volumes in source-dataset')
-	
+
+	.option('-m, --compressed', 'Generate a more compact stream by using compressed write records for blocks which are compressed on disk/memory') 
+	.option('-W, --raw', 'For encrypted datasets, send data exactly as it exists on disk')
+
 	.option('-s, --source [source-dataset]', 'source-dataset, eg: pool/vol1, pool')
 	.option('-S, --source-host [source-host]', 'host on which the source dataset resides')
 	
@@ -109,6 +112,9 @@ prog.command('pull [glob/preset] [source-host] [destination] [destination-host]'
 	.option('-x, --exclude [glob]', 'exclude datasets by glob, comma separated')
  	.option('-R, --recursive', 'Send all fileystems/volumes in source-dataset')
 	
+	.option('-m, --compressed', 'Generate a more compact stream by using compressed write records for blocks which are compressed on disk/memory') 
+	.option('-W, --raw', 'For encrypted datasets, send data exactly as it exists on disk')
+
 	.option('-s, --source [source-dataset]', 'source-dataset, eg: pool/vol1, pool')
 	.option('-S, --source-host [source-host]', 'host on which the source dataset resides')
 	

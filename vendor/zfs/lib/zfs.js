@@ -481,6 +481,14 @@ function send(opts, cb) {
         params.push('-v');
     }
 
+    if (opts.compressed) {
+        params.push('-c');
+    }
+
+    if (opts.raw) {
+        params.push('-w');
+    }
+
     if (opts.incremental) {
         if (opts.intermediary) {
             params.push('-I');
