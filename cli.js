@@ -259,6 +259,9 @@ prog.command('send')
 	.option('-i, --incremental [dataset]', 'do an incremental send starting with [dataset]')
 	.option('-s, --snapshot [dataset]', 'the final shanpshot to send')
 	
+	.option('-m, --compressed', 'Generate a more compact stream by using compressed write records for blocks which are compressed on disk/memory') 
+	.option('-W, --raw', 'For encrypted datasets, send data exactly as it exists on disk')
+
 	.option('-I, --intermediary', 'include itermediate snapshots when doing an incremental send')
 	.option('-p, --properties', 'include properties in the send stream')
 	.option('-R, --replication', 'create a replication send stream')
